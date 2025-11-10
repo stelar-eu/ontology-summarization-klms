@@ -1,2 +1,2 @@
 minio
-gilgamesh-summarizer
+gilgamesh-summarizer==0.2.6

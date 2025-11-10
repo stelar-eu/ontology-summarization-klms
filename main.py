@@ -84,10 +84,16 @@ def run(json):
         ontology_file = json["inputs"]['ontology_file'][0]
         mappings_file = json["outputs"]["mappings_file"]
 
+        # Download files from MinIO
+        mc.get_object(s3_path=graph_file, local_path='data_file.csv')
+        graph_file = 'data_file.csv'
+        mc.get_object(s3_path=ontology_file, local_path='ontology.json')
+        ontology_file = 'ontology.json'
+
         prune_topk_nodes = json.get('parameters', {}).get('prune_topk_nodes')
         max_cluster_size = json.get('parameters', {}).get('max_cluster_size')
         #default values
-        if prune_top_nodes is None:
+        if prune_topk_nodes is None:
             prune_topk_nodes = 6
         if max_cluster_size is None:
             max_cluster_size = 500
@@ -95,7 +101,7 @@ def run(json):
         ##### Tool Logic #####
         kg = KnowledgeGraph(graph_file, ontology_file)
 
-        clusters, triples_dict = kg.create_clusters(prune_top_nodes=prune_top_nodes,max_cluster_size=max_cluster_size)
+        clusters, triples_dict = kg.create_clusters(prune_top_nodes=prune_topk_nodes,max_cluster_size=max_cluster_size)
 
         classifier = Summarizer(kg)
         classifier.tokenizer.model_max_length = classifier.model.config.max_position_embeddings
@@ -105,9 +111,11 @@ def run(json):
         predicates, mappings = classifier.remove_classes_and_collect_range_predicates(results)
 
         # Write to a JSON file
-        with open(mappings_file, "w") as f:
+        with open('mappings.json', "w") as f:
             json.dump(mappings, f, indent=4)
 
+        #   Upload the results file to MinIO
+        mc.put_object(s3_path=mappings_file, file_path='mappings.json')
 
         out_json= {
                 'message': 'Tool Executed Succesfully',

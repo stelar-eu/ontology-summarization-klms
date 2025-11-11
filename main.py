@@ -112,7 +112,7 @@ def run(json):
 
         # Write to a JSON file
         with open('mappings.json', "w") as f:
-            json.dump(mappings, f, indent=4)
+            json.dump(list(mappings), f, indent=4)
 
         #   Upload the results file to MinIO
         mc.put_object(s3_path=mappings_file, file_path='mappings.json')

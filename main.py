@@ -80,9 +80,9 @@ def run(json):
             }
         }
         """
-        graph_file = json["inputs"]['data_file'][0]
-        ontology_file = json["inputs"]['ontology_file'][0]
-        mappings_file = json["outputs"]["mappings_file"]
+        graph_file = json["input"]['data_file'][0]
+        ontology_file = json["input"]['ontology_file'][0]
+        mappings_file = json["output"]["mappings_file"]
 
         # Download files from MinIO
         mc.get_object(s3_path=graph_file, local_path='data_file.csv')
@@ -119,7 +119,7 @@ def run(json):
 
         out_json= {
                 'message': 'Tool Executed Succesfully',
-                'outputs': {
+                'output': {
                     "mappings" : mappings_file
                 }, 
                 'metrics': { 
